@@ -1,0 +1,12 @@
+{
+  "name": "Pygmalion-6b",
+  "category": "Natural Language",
+  "example_input": {
+    "max_new_tokens": 5,
+    "prompt": "My favorite part about working with AI is"
+  },
+  "example_output": {
+    "output": "My favorite part about working with AI is that I get to work with a lot of different Ai."
+  },
+  "version": "1"
+}
