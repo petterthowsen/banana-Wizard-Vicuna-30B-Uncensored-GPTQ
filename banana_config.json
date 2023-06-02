@@ -1,5 +1,5 @@
 {
-  "name": "Pygmalion-6b",
+  "name": "Wizard-Vicuna-30B-Uncensored-GPTQ",
   "category": "Natural Language",
   "example_input": {
     "max_new_tokens": 5,
