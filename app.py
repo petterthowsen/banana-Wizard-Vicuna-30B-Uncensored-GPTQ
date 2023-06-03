@@ -1,27 +1,16 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Init is ran on server startup
-# Load your model to GPU as a global variable here.
+# Load your model to GPU as a global variable here using the variable name "model"
 def init():
     global model
     global tokenizer
 
-    print("loading to CPU...")
-    model = AutoModelForCausalLM.from_pretrained("TheBloke/Wizard-Vicuna-30B-Uncensored-GPTQ")
-    # model = GPTJForCausalLM.from_pretrained("PygmalionAI/pygmalion-6b", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-    print("done")
-
-    # conditionally load to GPU
-    if device == "cuda:0":
-        print("loading to GPU...")
-        model.cuda()
-        print("done")
-
-    tokenizer = AutoTokenizer.from_pretrained("TheBloke/Wizard-Vicuna-30B-Uncensored-GPTQ")
-
+    model_name = "TheBloke/Wizard-Vicuna-30B-Uncensored-GPTQ"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name).to("cuda")
+    
 
 # Inference is ran for every server call
 # Reference your preloaded global model variable here.
@@ -33,17 +22,11 @@ def inference(model_inputs:dict) -> dict:
     prompt = model_inputs.get('prompt', None)
     if prompt == None:
         return {'message': "No prompt provided"}
-    
-    # Tokenize inputs
-    input_tokens = tokenizer.encode(prompt, return_tensors="pt").to(device)
 
     # Run the model
-    output = model.generate(input_tokens)
-
-    # Decode output tokens
-    output_text = tokenizer.batch_decode(output, skip_special_tokens = True)[0]
-
-    result = {"output": output_text}
+    inputs = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
+    outputs = model.generate(inputs, max_length=100, no_repeat_ngram_size=2)
+    result = tokenizer.decode(outputs[0])
 
     # Return the results as a dictionary
     return result
